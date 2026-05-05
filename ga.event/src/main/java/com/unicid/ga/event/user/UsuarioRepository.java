@@ -1,0 +1,13 @@
+package com.unicid.ga.event.user;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
+import java.util.UUID;
+
+//Interface acesso ao DB para a entidade Usuario
+@Repository
+public interface UsuarioRepository extends JpaRepository<Usuario, UUID> {
+    Optional<Usuario> findByEmail(String email); //busca um user pelo email cadastrado
+}

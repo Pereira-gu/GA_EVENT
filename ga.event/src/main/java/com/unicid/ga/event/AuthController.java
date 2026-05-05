@@ -1,6 +1,10 @@
-package com.unicid.ga.event.user;
+package com.unicid.ga.event;
+
 
 import com.unicid.ga.event.AppConfig;
+import com.unicid.ga.event.user.PerfilUsuario;
+import com.unicid.ga.event.user.Usuario;
+import com.unicid.ga.event.user.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

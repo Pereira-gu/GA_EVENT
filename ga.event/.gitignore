@@ -35,7 +35,4 @@ build/
 ### basic ###
 .idea
 .mvn
-mvnw
-mvnw.md
-mvnw.cmd
 application.properties

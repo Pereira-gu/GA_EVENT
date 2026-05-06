@@ -35,4 +35,3 @@ build/
 ### basic ###
 .idea
 .mvn
-application.properties

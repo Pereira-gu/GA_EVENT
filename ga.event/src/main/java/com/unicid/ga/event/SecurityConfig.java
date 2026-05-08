@@ -22,7 +22,18 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Libera requisições preflight do CORS
                 .requestMatchers("/auth/**").permitAll() 
                 .requestMatchers("/scanner/**").permitAll() 
-                .requestMatchers("/eventos.html", "/index.html", "/", "/*.html", "/static/**", "/*.js", "/*.css").permitAll()
+                .requestMatchers(
+                        "/eventos.html", 
+                        "/index.html", 
+                        "/", 
+                        "/*.html", 
+                        "/static/**",
+                        "/public/**", 
+                        "/resources/**", 
+                        "/META-INF/resources/**", 
+                        "/*.js", 
+                        "/*.css"
+                ).permitAll()
                 .requestMatchers("/api/eventos/**").permitAll() 
                 .anyRequest().authenticated()
             );

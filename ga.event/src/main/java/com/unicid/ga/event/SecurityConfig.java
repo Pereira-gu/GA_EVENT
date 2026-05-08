@@ -14,6 +14,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll() // Libera Login e Registro
                         .requestMatchers("/scanner/**").permitAll() // Libera o scanner temporariamente
+                        .requestMatchers("/eventos.html").permitAll() // Libera a página HTML de eventos
+                        .requestMatchers("/api/eventos/**").permitAll() // Libera a API de eventos para a página funcionar
                         .anyRequest().authenticated()
                 );
         return http.build();

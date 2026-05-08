@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciamento de Eventos</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        form { margin-bottom: 20px; padding: 10px; border: 1px solid #ccc; background-color: #f9f9f9; }
+        input, button { padding: 8px; margin: 5px 0; }
+        .action-btn { cursor: pointer; padding: 5px 10px; margin-right: 5px; }
+        .delete-btn { background-color: #ff4c4c; color: white; border: none; }
+        .edit-btn { background-color: #4CAF50; color: white; border: none; }
+    </style>
+</head>
+<body>
+
+    <h2>Gerenciamento de Eventos</h2>
+
+    <form id="eventoForm">
+        <input type="hidden" id="eventoId">
+
+        <label for="titulo">Título do Evento:</label><br>
+        <input type="text" id="titulo" required><br>
+
+        <label for="local">Local:</label><br>
+        <input type="text" id="local" required><br>
+
+        <label for="dataInicio">Data de Início:</label><br>
+        <input type="datetime-local" id="dataInicio" required><br>
+
+        <label for="cargaHoraria">Carga Horária (em minutos):</label><br>
+        <input type="number" id="cargaHoraria" required><br>
+
+        <button type="submit">Salvar Evento</button>
+        <button type="button" onclick="limparFormulario()">Cancelar</button>
+    </form>
+
+    <table id="tabelaEventos">
+        <thead>
+            <tr>
+                <th>Título</th>
+                <th>Local</th>
+                <th>Data Início</th>
+                <th>Carga Horária</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Eventos serão carregados aqui via JavaScript -->
+        </tbody>
+    </table>
+
+    <script>
+        const apiUrl = '/api/eventos'; // Baseado na URL do seu controller
+
+        // Carregar eventos ao iniciar a página
+        document.addEventListener('DOMContentLoaded', carregarEventos);
+
+        function carregarEventos() {
+            // Em um cenário real com Spring Security, você precisaria enviar o token JWT no cabeçalho.
+            // Ex: headers: { 'Authorization': 'Bearer ' + token }
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(eventos => {
+                    const tbody = document.querySelector('#tabelaEventos tbody');
+                    tbody.innerHTML = '';
+                    eventos.forEach(evento => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${evento.titulo}</td>
+                            <td>${evento.local}</td>
+                            <td>${new Date(evento.dataInicio).toLocaleString('pt-BR')}</td>
+                            <td>${evento.cargaHoraria} min</td>
+                            <td>
+                                <button class="action-btn edit-btn" onclick="editarEvento('${evento.id}', '${evento.titulo}', '${evento.local}', '${evento.dataInicio}', ${evento.cargaHoraria})">Editar</button>
+                                <button class="action-btn delete-btn" onclick="deletarEvento('${evento.id}')">Excluir</button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                })
+                .catch(error => console.error('Erro ao carregar eventos:', error));
+        }
+
+        document.getElementById('eventoForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const id = document.getElementById('eventoId').value;
+            const titulo = document.getElementById('titulo').value;
+            const local = document.getElementById('local').value;
+            const dataInicio = document.getElementById('dataInicio').value;
+            const cargaHoraria = document.getElementById('cargaHoraria').value;
+
+            const evento = { titulo, local, dataInicio, cargaHoraria };
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `${apiUrl}/${id}` : apiUrl;
+
+            fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(evento)
+            })
+            .then(response => {
+                if (response.ok) {
+                    limparFormulario();
+                    carregarEventos();
+                } else {
+                    alert('Erro ao salvar evento.');
+                }
+            })
+            .catch(error => console.error('Erro:', error));
+        });
+
+        function editarEvento(id, titulo, local, dataInicio, cargaHoraria) {
+            document.getElementById('eventoId').value = id;
+            document.getElementById('titulo').value = titulo;
+            document.getElementById('local').value = local;
+            // Formatando para o datetime-local do HTML5
+            document.getElementById('dataInicio').value = dataInicio.slice(0, 16);
+            document.getElementById('cargaHoraria').value = cargaHoraria;
+        }
+
+        function deletarEvento(id) {
+            if (confirm('Tem certeza que deseja excluir este evento?')) {
+                fetch(`${apiUrl}/${id}`, {
+                    method: 'DELETE'
+                })
+                .then(response => {
+                    if (response.ok) {
+                        carregarEventos();
+                    } else {
+                        alert('Erro ao excluir evento.');
+                    }
+                })
+                .catch(error => console.error('Erro:', error));
+            }
+        }
+
+        function limparFormulario() {
+            document.getElementById('eventoForm').reset();
+            document.getElementById('eventoId').value = '';
+        }
+    </script>
+</body>
+</html>

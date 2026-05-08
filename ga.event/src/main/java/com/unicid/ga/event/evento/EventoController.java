@@ -1,5 +1,6 @@
 package com.unicid.ga.event.evento;
 
+import com.unicid.ga.event.evento.dto.EventoDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -86,27 +87,4 @@ public class EventoController {
         eventoService.deletarEvento(id);
         return ResponseEntity.noContent().build();
     }
-}
-
-/**
- * DTO (Data Transfer Object) para encapsular a entrada de dados do evento.
- */
-class EventoDTO {
-    private String titulo;
-    private String local;
-    private LocalDateTime dataInicio;
-    private Integer cargaHoraria;
-
-    // Getters e Setters
-    public String getTitulo() { return titulo; }
-    public void setTitulo(String titulo) { this.titulo = titulo; }
-
-    public String getLocal() { return local; }
-    public void setLocal(String local) { this.local = local; }
-
-    public LocalDateTime getDataInicio() { return dataInicio; }
-    public void setDataInicio(LocalDateTime dataInicio) { this.dataInicio = dataInicio; }
-
-    public Integer getCargaHoraria() { return cargaHoraria; }
-    public void setCargaHoraria(Integer cargaHoraria) { this.cargaHoraria = cargaHoraria; }
 }

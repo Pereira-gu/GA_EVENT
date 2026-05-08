@@ -12,6 +12,12 @@ import java.util.UUID;
 public interface RegistroPresencaRepository extends JpaRepository<RegistroPresenca, Long> {
     Optional<RegistroPresenca> findByUsuarioIdAndEventoIdAndStatus(UUID usuarioId, UUID eventoId, String status);
     
-    // Novo método para buscar o histórico de eventos de um aluno específico
+    // Buscar histórico do aluno
     List<RegistroPresenca> findByUsuarioId(UUID usuarioId);
+    
+    // Buscar todos os inscritos em um evento específico
+    List<RegistroPresenca> findByEventoId(UUID eventoId);
+    
+    // Verificar se o aluno já está inscrito no evento, independente do status
+    Optional<RegistroPresenca> findByUsuarioIdAndEventoId(UUID usuarioId, UUID eventoId);
 }

@@ -1,12 +1,12 @@
 package com.unicid.ga.event.evento;
 
 import com.unicid.ga.event.evento.dto.EventoDTO;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -26,7 +26,7 @@ public class EventoController {
      * @return ResponseEntity com o evento criado e o status 201 (Created).
      */
     @PostMapping
-    public ResponseEntity<Evento> criarEvento(@RequestBody EventoDTO request) {
+    public ResponseEntity<Evento> criarEvento(@Valid @RequestBody EventoDTO request) {
         Evento novoEvento = new Evento(
                 request.getTitulo(),
                 request.getLocal(),
@@ -66,7 +66,7 @@ public class EventoController {
      * @return ResponseEntity com o evento atualizado.
      */
     @PutMapping("/{id}")
-    public ResponseEntity<Evento> atualizarEvento(@PathVariable UUID id, @RequestBody EventoDTO request) {
+    public ResponseEntity<Evento> atualizarEvento(@PathVariable UUID id, @Valid @RequestBody EventoDTO request) {
         Evento eventoAtualizado = new Evento(
                 request.getTitulo(),
                 request.getLocal(),

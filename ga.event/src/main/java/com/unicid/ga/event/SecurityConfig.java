@@ -36,6 +36,7 @@ public class SecurityConfig {
                 ).permitAll()
                 .requestMatchers("/api/eventos/**").permitAll() 
                 .requestMatchers("/api/inscricoes/**").permitAll() // Libera as rotas de inscrição e histórico
+                .requestMatchers("/api/usuarios/**").permitAll() // Libera a rota de buscar usuário
                 .anyRequest().authenticated()
             );
         return http.build();

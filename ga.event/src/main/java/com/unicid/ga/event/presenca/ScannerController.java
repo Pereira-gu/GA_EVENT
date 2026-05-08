@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -65,36 +66,78 @@ public class ScannerController {
         Usuario usuario = usuarioOpt.get();
         Evento evento = eventoOpt.get();
 
-        // Alternância automática de status (Check-in / Check-out)
+        // 1. O aluno já se inscreveu antes (Status: PENDENTE)?
+        Optional<RegistroPresenca> inscricaoPendente = registroPresencaRepository
+                .findByUsuarioIdAndEventoIdAndStatus(usuarioId, evento.getId(), "PENDENTE");
+
+        if (inscricaoPendente.isPresent()) {
+            // O aluno estava inscrito, e este é o primeiro SCAN (Check-in real na porta)
+            RegistroPresenca registro = inscricaoPendente.get();
+            registro.setEntrada(LocalDateTime.now()); // Substitui a data de inscrição pela hora real de entrada
+            registro.setStatus("ATIVO"); // Aluno está dentro do evento
+            registroPresencaRepository.save(registro);
+            return ResponseEntity.ok("Check-in realizado com sucesso! (Inscrição ativada)");
+        }
+
+        // 2. Alternância automática de status (Check-out)
         Optional<RegistroPresenca> registroAtivo = registroPresencaRepository
                 .findByUsuarioIdAndEventoIdAndStatus(usuarioId, evento.getId(), "ATIVO");
 
         if (registroAtivo.isPresent()) {
-            // Realiza o Check-out
+            // Realiza o Check-out (Segundo Scan)
             RegistroPresenca registro = registroAtivo.get();
             registro.setSaida(LocalDateTime.now());
-            registro.setStatus("CONCLUIDO");
 
+            // Calcula o tempo de permanência em minutos
             long minutosPermanencia = Duration.between(registro.getEntrada(), registro.getSaida()).toMinutes();
+            
+            // Regra: Deve ficar pelo menos 80% do tempo do evento
             double cargaHorariaMinima = evento.getCargaHoraria() * 0.8;
 
             if (minutosPermanencia >= cargaHorariaMinima) {
-                usuario.setBadgeOuro(true);
-                usuarioRepository.save(usuario);
+                registro.setStatus("CONCLUIDO");
+            } else {
+                registro.setStatus("INCOMPLETO"); // Saiu antes da hora
             }
-
+            
             registroPresencaRepository.save(registro);
-            return ResponseEntity.ok("Check-out realizado com sucesso!");
-        } else {
-            // Realiza o Check-in
-            RegistroPresenca novoRegistro = new RegistroPresenca();
-            novoRegistro.setUsuarioId(usuarioId);
-            novoRegistro.setEventoId(evento.getId());
-            novoRegistro.setEntrada(LocalDateTime.now());
-            novoRegistro.setStatus("ATIVO");
 
-            registroPresencaRepository.save(novoRegistro);
-            return ResponseEntity.ok("Check-in realizado com sucesso!");
+            // Lógica do Badge de Ouro: Se atingir 3 eventos CONCLUIDOS, ganha a badge
+            verificarBadgeOuro(usuario);
+
+            return ResponseEntity.ok("Check-out realizado! Tempo: " + minutosPermanencia + " minutos. Status final: " + registro.getStatus());
+        }
+
+        // Se chegou aqui e não caiu nem no PENDENTE nem no ATIVO, significa que o aluno tentou entrar
+        // SEM ter se inscrito pelo app antes (ou a inscrição já foi concluída/cancelada).
+        // Aqui você pode decidir se o porteiro pode forçar a entrada ou se recusa.
+        // Vamos permitir a entrada direta ("comprou ingresso na hora"):
+        RegistroPresenca novoRegistro = new RegistroPresenca();
+        novoRegistro.setUsuarioId(usuarioId);
+        novoRegistro.setEventoId(evento.getId());
+        novoRegistro.setEntrada(LocalDateTime.now());
+        novoRegistro.setStatus("ATIVO");
+        registroPresencaRepository.save(novoRegistro);
+        
+        return ResponseEntity.ok("Check-in avulso realizado com sucesso! (Sem inscrição prévia)");
+    }
+
+    /**
+     * Verifica o histórico do aluno e concede a Badge Ouro se ele atingir os critérios.
+     */
+    private void verificarBadgeOuro(Usuario usuario) {
+        if (usuario.isBadgeOuro()) return; // Já tem a badge, não precisa recalcular
+
+        List<RegistroPresenca> historico = registroPresencaRepository.findByUsuarioId(usuario.getId());
+        
+        long eventosConcluidos = historico.stream()
+                .filter(reg -> "CONCLUIDO".equals(reg.getStatus()))
+                .count();
+
+        // Regra do negócio: 3 eventos concluídos = Badge Ouro
+        if (eventosConcluidos >= 3) {
+            usuario.setBadgeOuro(true);
+            usuarioRepository.save(usuario);
         }
     }
 }

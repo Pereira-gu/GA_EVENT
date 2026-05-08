@@ -3,8 +3,8 @@ FROM maven:3.9.6-eclipse-temurin-21 AS build
 WORKDIR /app
 COPY pom.xml .
 COPY src ./src
-# Adicionando -Dmaven.resources.skip=true para ignorar o erro do plugin de recursos
-RUN mvn clean package -DskipTests -Dmaven.resources.skip=true
+# A flag -Dmaven.resources.skip=true foi removida para garantir que os arquivos estáticos (HTML) sejam incluídos.
+RUN mvn clean package -DskipTests
 
 # 2. Etapa de Execução
 FROM eclipse-temurin:21-jre-jammy

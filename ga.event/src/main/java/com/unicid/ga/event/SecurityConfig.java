@@ -34,9 +34,9 @@ public class SecurityConfig {
                         "/*.js", 
                         "/*.css"
                 ).permitAll()
-                .requestMatchers("/api/eventos/**").permitAll() 
-                .requestMatchers("/api/inscricoes/**").permitAll() // Libera as rotas de inscrição e histórico
-                .requestMatchers("/api/usuarios/**").permitAll() // Libera a rota de buscar usuário
+                .requestMatchers("/api/eventos", "/api/eventos/**").permitAll() // <-- Ajuste aqui
+                .requestMatchers("/api/inscricoes", "/api/inscricoes/**").permitAll() // <-- Ajuste aqui
+                .requestMatchers("/api/usuarios", "/api/usuarios/**").permitAll() // <-- Ajuste aqui
                 .anyRequest().authenticated()
             );
         return http.build();
@@ -47,7 +47,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         // Permite qualquer origem. Se quiser restringir, troque "*" pelo seu domínio do Railway
         configuration.setAllowedOriginPatterns(Arrays.asList("*")); 
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD")); // Adicionei mais métodos para garantir
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
